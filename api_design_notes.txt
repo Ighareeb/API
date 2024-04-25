@@ -1,0 +1,11 @@
+# INFO field (info object)
+- title, description --> grammar, concise, can be modified to display better in the dev UI
+- toS --> set up a doc for devs to refer to when using endpoints
+**- version --> *SECURITY --> note that old versions of api assets should be deprecated and removed from the server otherwise any vulnerabilities they may have had will still be present in the server.
+
+# SERVERS field (servers object)
+# PATHS field (paths object)
+# COMPONENTS field (components object)
+# SECURITY field (security object)
+# TAGS field (tags object)
+# EXTERNAL DOCS field (external docs object)
