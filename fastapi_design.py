@@ -16,13 +16,16 @@ from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 
 # JWT, AUTH
-import jwt
+from jose import jwt
+from jose.exceptions import JWTError
+
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 
 # Protect against XSS and CSRF
 import nh3
 from fastapi_csrf_protect import CsrfProtect
+from fastapi_limiter import FastAPILimiter
 
 
 app = FastAPI()
@@ -51,6 +54,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 limiter = FastAPILimiter(app)
 
 
+@FastAPILimiter.limit("5/minute")
 @limiter.limit("5/minute")
 
 # Add SSL certificate and Key files
@@ -58,15 +62,14 @@ limiter = FastAPILimiter(app)
 async def root():
     return {"message": "Added digitalcerts by specifying SSL certificate and Key files"}
 
-
-# if __name__ == "__main__":
-#     uvicorn.run(
-#         app,
-#         host="0.0.0.0",
-#         port=8000,
-#         ssl_keyfile="path/to/key.pem",
-#         ssl_certfile="path/to/cert.pem",
-#     )
+    # if __name__ == "__main__":
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        ssl_keyfile="path/to/key.pem",
+        ssl_certfile="path/to/cert.pem",
+    )
 
 
 # Extend openapi schema
@@ -108,7 +111,6 @@ def authenticate_user(username: str, password: str):
     return user
 
 
-# Token generation function
 def create_access_token(data: dict):
     encoded_jwt = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -118,13 +120,13 @@ def create_access_token(data: dict):
 def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        username: str = payload.get("sub", "")
+        if username == "":
             raise HTTPException(
                 status_code=401, detail="Invalid authentication credentials"
             )
         token_data = {"username": username}
-    except jwt.JWTError:
+    except JWTError:
         raise HTTPException(
             status_code=401, detail="Invalid authentication credentials"
         )
@@ -175,6 +177,13 @@ def generate_secret_key(length=32):
 
 
 if __name__ == "__main__":
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        ssl_keyfile="path/to/key.pem",
+        ssl_certfile="path/to/cert.pem",
+    )
     # Start key rotation in a separate thread
     rotation_interval_seconds = 3600  # Rotate key every hour (adjust as needed)
     rotation_thread = threading.Thread(
@@ -210,7 +219,7 @@ def protected_route_role_based():
 # ------------Protect against XSS and CSRF----------
 # XSS protection w/nh3
 nh3.clean(
-    html,
+    "<unknown>hi",
     tags=None,
     clean_content_tags=None,
     attributes=None,

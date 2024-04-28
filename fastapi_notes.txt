@@ -35,6 +35,7 @@ https://github.com/long2ice/fastapi-limiter?tab=readme-ov-file&ref=escape.tech#r
 	Mitigate vulnerability by escaping user-generated content before rendering it in the browser/HTML templates.
 	https://nh3.readthedocs.io/en/latest/?ref=escape.tech
 
-## How to secure FastAPI API against Cross-Site Request Forgery CSRF using FastAPI CSRF Protect ext.
+## How to secure FastAPI API against stateless Cross-Site Request Forgery CSRF using FastAPI CSRF Protect ext.
+	https://github.com/aekasitt/fastapi-csrf-protect?ref=escape.tech
 	Create /csrftoken/ endpoint in your FastAPI application can be beneficial, especially if you need to obtain CSRF tokens for client-side operations such as AJAX requests or SPA (Single Page Application) interactions. This endpoint would generate and return a CSRF token upon request.
 	(Note- there is a option where you can integrate extension for the login form of FastAPI to protect /login/ POST handlers against CSRF attacks)
