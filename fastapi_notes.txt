@@ -1,0 +1,29 @@
+# Use pydantic models for request and response validation
+-- pydantic schemas/models/classes allow attribute and data types to be defined. Allow auto-validation for data and format.
+
+# Use expected data types hints for variables (and function return types) == error handling, validation, maintains documentations, auto-generates serialization/deserialization code
+
+# Use Request object to access params, headers, cookies to handle request validation accordingly
+
+# Implement HTTPS to secure data transmission/sensitive info like pwds, usernames, payment methods etc. (encryption between client, server) - prevents interception, tampering
+--- use digitalcertificates and '.../cert', '.../key' options in uvicorn to specify the path to the certificate and key files (see example)
+--- In Azure: setup DNS server in VM with fixed public IP where you configure a 'record' as ref to domain and IP of server. 
+--- In Azure: setup a 'network security group' to allow only HTTPS traffic on port 443.
+	Use TLS Termination proxy using SNI extension. Decide how to encypt that rest of the TCP communication to complete TLS handshake so an encrypted, secyre TCP connection can be established (since HTTP is application layer protocol it is one layer above where the encrytion and certificate handling happens in TCP layer). [HTTPS is essentially HTTP over SSL/TLS]
+
+# Validate and Sanitize user input
+-- built-in support to prevent vulnerabilities such as SQL injection, cross-site scripting attacks (XSS) [insert harmful /payloads into web apps, app is target], Cross-site request forgery (CSRF) [pretending to be authenticated; perform action without consent - eg. hiding script in a website that attempts to manipulate your login credentials being used for other websites] etc.
+--- Define Models for User Input with specific rules for data types, constraints, length, format etc. FastAPI will send error if request data doesn't match model schema
+
+# Implement Rate Limiting to prevent abuse of API (see example)
+-- Use libs == fastapi-limiter, fastapi-utils, starlette.middleware.limiter, etc. to limit the number of requests per user, per IP, per endpoint, etc. to prevent abuse of API
+https://github.com/long2ice/fastapi-limiter?tab=readme-ov-file&ref=escape.tech#redis
+
+# Implement Authentication and Authorization
+## JWT Authentication (see example)
+---  install, then, define a user model that includes fields such as username, password (hashed), and any other relevant information.
+	1. Implement an authentication service responsible for authenticating users and generating JWT tokens + 
+	2. Implement an endpoint for generating JWT tokens upon successful authentication + 
+	3. Implement an endpoint for generating JWT tokens upon successful authentication +
+	4. Secret key rotation functionality to invalidate old tokens
+## (Using Decorators) Implement Role-Based Authorization / Access-Control to resources based on roles, permissions of Authenticated users
