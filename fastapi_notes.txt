@@ -26,4 +26,15 @@ https://github.com/long2ice/fastapi-limiter?tab=readme-ov-file&ref=escape.tech#r
 	2. Implement an endpoint for generating JWT tokens upon successful authentication + 
 	3. Implement an endpoint for generating JWT tokens upon successful authentication +
 	4. Secret key rotation functionality to invalidate old tokens
-## (Using Decorators) Implement Role-Based Authorization / Access-Control to resources based on roles, permissions of Authenticated users
+
+# (Using Decorators OR middleware) Implement Role-Based Authorization / Access-Control to resources based on roles, permissions of Authenticated users (need to define different user roles with varying levels of access)
+
+# Protection against common vulnerabilities (maintained libraries included)
+
+## Protect Against Cross-Site Scripting (XSS) [e.g. in code uses nh3 library nh3.clean() to sanitize user input/HTML fragments]
+	Mitigate vulnerability by escaping user-generated content before rendering it in the browser/HTML templates.
+	https://nh3.readthedocs.io/en/latest/?ref=escape.tech
+
+## How to secure FastAPI API against Cross-Site Request Forgery CSRF using FastAPI CSRF Protect ext.
+	Create /csrftoken/ endpoint in your FastAPI application can be beneficial, especially if you need to obtain CSRF tokens for client-side operations such as AJAX requests or SPA (Single Page Application) interactions. This endpoint would generate and return a CSRF token upon request.
+	(Note- there is a option where you can integrate extension for the login form of FastAPI to protect /login/ POST handlers against CSRF attacks)

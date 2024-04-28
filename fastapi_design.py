@@ -1,7 +1,9 @@
+import html
 import random
 import string
 import threading
 import time
+from typing import List
 from fastapi import FastAPI, HTTPException, Depends
 
 # extend openapi schema
@@ -16,6 +18,11 @@ from fastapi_limiter.depends import RateLimiter
 import jwt
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
+
+# Protect against XSS and CSRF
+import nh3
+from fastapi_csrf_protect import CsrfProtect
+
 
 app = FastAPI()
 
@@ -51,14 +58,14 @@ async def root():
     return {"message": "Added digitalcerts by specifying SSL certificate and Key files"}
 
 
-if __name__ == "__main__":
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=8000,
-        ssl_keyfile="path/to/key.pem",
-        ssl_certfile="path/to/cert.pem",
-    )
+# if __name__ == "__main__":
+#     uvicorn.run(
+#         app,
+#         host="0.0.0.0",
+#         port=8000,
+#         ssl_keyfile="path/to/key.pem",
+#         ssl_certfile="path/to/cert.pem",
+#     )
 
 
 # Extend openapi schema
@@ -124,7 +131,6 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 
 # 2. Implement an endpoint for generating JWT tokens upon successful authentication
-app = FastAPI()
 
 
 @app.post("/token")
@@ -145,7 +151,7 @@ async def protected_route(current_user: dict = Depends(get_current_user)):
     }
 
 
-# Secret key rotation functionality
+# 4. Secret key rotation functionality
 def rotate_secret_key():
     """Rotate the secret key."""
     global SECRET_KEY
@@ -178,5 +184,58 @@ if __name__ == "__main__":
 
 
 # --------JWT END------------
+# ------------Implement Role-Based Authorization----------
+def check_roles(roles: List[str]):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            # Get the current user's roles from the database or token
+            # Check if any of the roles match the required roles
+            # If not, raise an HTTPException with 403 status code
+            # Else, continue with the execution of the function
+            return func(*args, **kwargs)
 
+        return wrapper
+
+    return decorator
+
+
+@app.get("/protected_route")
+@check_roles(["admin"])
+def protected_route_role_based():
+    return {"message": "You have access to this protected route!"}
+
+
+# --------RBA END------------
+# ------------Protect against XSS and CSRF----------
+# XSS protection w/nh3
+nh3.clean(
+    html,
+    tags=None,
+    clean_content_tags=None,
+    attributes=None,
+    attribute_filter=None,
+    strip_comments=True,
+    link_rel="noopener noreferrer",
+    generic_attribute_prefixes=None,
+    tag_attribute_values=None,
+    set_tag_attribute_values=None,
+    url_schemes=None,
+)
+# example usage
+nh3.clean("<unknown>hi")
+"hi"
+nh3.clean("<b><img src='' onerror='alert(\\'hax\\')'>XSS?</b>")
+'<b><img src="">XSS?</b>'
+# CSRF protection w/fastapi-csrf-protect
+csrf = CsrfProtect(app, app.secret_key)
+
+
+@app.get("/csrftoken/")
+def get_csrf_token(csrf_protect: CsrfProtect = Depends()):
+    """Endpoint to obtain a CSRF token."""
+    csrf_token, _ = csrf_protect.generate_csrf_tokens()
+    return {"csrf_token": csrf_token}
+
+
+# ------------END Protect against XSS and CSRF----------
 app.openapi = custom_openapi
