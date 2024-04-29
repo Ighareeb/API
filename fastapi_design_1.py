@@ -1,10 +1,11 @@
+from datetime import datetime, timedelta, timezone
 import html
 import os
 import random
 import string
 import threading
 import time
-from typing import List
+from typing import List, Union
 from fastapi import FastAPI, HTTPException, Depends
 
 # extend openapi schema
@@ -43,6 +44,7 @@ if SECRET_KEY is None:
 
 # Algorithm used for JWT token encoding
 ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -111,8 +113,14 @@ def authenticate_user(username: str, password: str):
     return user
 
 
-def create_access_token(data: dict):
-    encoded_jwt = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
@@ -174,6 +182,30 @@ def generate_secret_key(length=32):
     """Generate a random string of letters and digits for the secret key."""
     chars = string.ascii_letters + string.digits
     return "".join(random.choice(chars) for _ in range(length))
+
+
+# UTIL FUNCTION for pwd hashing to store in db and compare with user/client request plain text password
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
+def get_user(db, username: str):
+    if username in db:
+        user_dict = db[username]
+        return UserInDB(**user_dict)
+
+
+def authenticate_user_2(fake_db, username: str, password: str):
+    user = get_user(fake_db, username)
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
 
 
 if __name__ == "__main__":

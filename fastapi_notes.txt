@@ -27,6 +27,7 @@ https://github.com/long2ice/fastapi-limiter?tab=readme-ov-file&ref=escape.tech#r
 	3. Implement an endpoint for generating JWT tokens upon successful authentication +
 	4. Secret key rotation functionality to invalidate old tokens
 
+# Hash passwords before storing them in the database; use to compare with user input during authentication (need to hash user request password and compare with hashed password in db)
 # (Using Decorators OR middleware) Implement Role-Based Authorization / Access-Control to resources based on roles, permissions of Authenticated users (need to define different user roles with varying levels of access)
 
 # Protection against common vulnerabilities (maintained libraries included)
@@ -39,3 +40,9 @@ https://github.com/long2ice/fastapi-limiter?tab=readme-ov-file&ref=escape.tech#r
 	https://github.com/aekasitt/fastapi-csrf-protect?ref=escape.tech
 	Create /csrftoken/ endpoint in your FastAPI application can be beneficial, especially if you need to obtain CSRF tokens for client-side operations such as AJAX requests or SPA (Single Page Application) interactions. This endpoint would generate and return a CSRF token upon request.
 	(Note- there is a option where you can integrate extension for the login form of FastAPI to protect /login/ POST handlers against CSRF attacks)
+
+## Using CORS Middleware to secure FastAPI API against Cross-Origin Resource Sharing (CORS) attacks
+	To prevent unauthorized access to your API from other domains, you can use the CORSMiddleware provided by FastAPI. This middleware allows you to configure the CORS policy for your FastAPI application, including allowed origins, methods, and headers.
+	specify if BE allows (Credentials[Authorization headers, cooking etc.] - Specific HTTP Methods, Headers)
+
+# Use Access-Control-Allow-Origin/Methods/Headers OPTIONS method with request
